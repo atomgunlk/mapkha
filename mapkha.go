@@ -112,3 +112,43 @@ func (w *Wordcut) WordWrap(text string, maxlen int) []string {
 	tokens[j] = string(textRunes[start:end])
 	return tokens[:j+1]
 }
+
+func wordChar(text []rune) int {
+	return len(text)
+}
+
+func (w *Wordcut) WordWrapChar(text string, maxchar int) []string {
+	w.Reset()
+	textRunes := []rune(text)
+	path := buildPath(textRunes, w.edgeBuilders)
+	ranges := pathToRanges(path)
+	tokens := make([]string, len(ranges))
+	currentChars, start, end, j := 0, 0, 0, 0
+
+	for _, r := range ranges {
+		nextChars := wordChar(textRunes[r.s:r.e])
+		if currentChars == 0 {
+			start, end = r.s, r.e
+			currentChars = nextChars
+		} else {
+			if currentChars+nextChars > maxchar {
+				tokens[j] = string(textRunes[start:end])
+				if r.EdgeType != 5 {
+					start, end = r.s, r.e
+					currentChars = nextChars
+				} else {
+					// skip
+					currentChars = 0
+				}
+				j++
+			} else {
+				currentChars += nextChars
+				if r.EdgeType != 5 {
+					end = r.e
+				}
+			}
+		}
+	}
+	tokens[j] = string(textRunes[start:end])
+	return tokens[:j+1]
+}
