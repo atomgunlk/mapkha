@@ -46,7 +46,13 @@ func MakeDict(words []string) *Dict {
 // LoadDefaultDict - loading default Thai dictionary
 func LoadDefaultDict() (*Dict, error) {
 	_, filename, _, _ := runtime.Caller(0)
-	return LoadDict(path.Join(path.Dir(filename), "tdict-std.txt"))
+	return LoadDict(path.Join(path.Dir(filename), "dict/tdict-std.txt"))
+}
+
+// LoadLexitronDict - loading Lexitron Thai dictionary by NECTEC [http://www.sansarn.com/lexto/license-lexitron.php]
+func LoadLexitronDict() (*Dict, error) {
+	_, filename, _, _ := runtime.Caller(0)
+	return LoadDict(path.Join(path.Dir(filename), "dict/lexitron.txt"))
 }
 
 // Lookup - lookup node in a Prefix Tree
