@@ -2,9 +2,12 @@ package mapkha
 
 import (
 	"bufio"
+	_ "embed"
+	"errors"
 	"os"
 	"path"
 	"runtime"
+	"strings"
 )
 
 // Dict is a prefix tree
@@ -21,6 +24,25 @@ func LoadDict(path string) (*Dict, error) {
 	defer f.Close()
 	wordWithPayloads := make([]WordWithPayload, 0)
 	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		if line := scanner.Text(); len(line) != 0 {
+			wordWithPayloads = append(wordWithPayloads,
+				WordWithPayload{line, true})
+		}
+	}
+	tree := MakePrefixTree(wordWithPayloads)
+	dix := Dict{tree}
+	return &dix, nil
+}
+
+// LoadDictFromString is for loading a word list from string var
+func LoadDictFromString(dictStr string) (*Dict, error) {
+	if len(dictStr) == 0 {
+		return nil, errors.New("empty string")
+	}
+
+	wordWithPayloads := make([]WordWithPayload, 0)
+	scanner := bufio.NewScanner(strings.NewReader(dictStr))
 	for scanner.Scan() {
 		if line := scanner.Text(); len(line) != 0 {
 			wordWithPayloads = append(wordWithPayloads,
@@ -49,10 +71,12 @@ func LoadDefaultDict() (*Dict, error) {
 	return LoadDict(path.Join(path.Dir(filename), "dict/tdict-std.txt"))
 }
 
+//go:embed dict/lexitron.txt
+var lexitronDict string
+
 // LoadLexitronDict - loading Lexitron Thai dictionary by NECTEC [http://www.sansarn.com/lexto/license-lexitron.php]
 func LoadLexitronDict() (*Dict, error) {
-	_, filename, _, _ := runtime.Caller(0)
-	return LoadDict(path.Join(path.Dir(filename), "dict/lexitron.txt"))
+	return LoadDictFromString(lexitronDict)
 }
 
 // Lookup - lookup node in a Prefix Tree
